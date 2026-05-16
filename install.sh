@@ -9,19 +9,23 @@ mkdir -p "$SKILLS_DIR"
 
 echo "Installing claude-skill skills..."
 
-# Download all skill files
-for skill_file in skills/*.md; do
-  if [ -f "$skill_file" ]; then
-    skill_name=$(basename "$skill_file")
+# Download all skill directories
+for skill_dir in skills/*/; do
+  if [ -d "$skill_dir" ]; then
+    skill_name=$(basename "$skill_dir")
     echo "  Installing $skill_name..."
-    curl -sSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/${skill_file}" -o "${SKILLS_DIR}/${skill_name}"
+    # Create skill directory
+    mkdir -p "${SKILLS_DIR}/${skill_name}"
+    # Download all files in the skill directory
+    for file in "${skill_dir}"*; do
+      if [ -f "$file" ]; then
+        filename=$(basename "$file")
+        echo "    Downloading $filename..."
+        curl -sSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/${skill_dir}${filename}" -o "${SKILLS_DIR}/${skill_name}/${filename}"
+      fi
+    done
   fi
 done
 
-# Download CLAUDE.md if exists
-if [ -f "CLAUDE.md" ]; then
-  echo "  Installing CLAUDE.md..."
-  curl -sSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/CLAUDE.md" -o "${HOME}/.claude/CLAUDE.md"
-fi
-
+echo ""
 echo "Done! Restart Claude Code to use the skills."
