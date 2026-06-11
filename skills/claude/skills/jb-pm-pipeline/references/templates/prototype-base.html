@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>经贝管家 - 原型</title>
+  <style>
+    /* ==================== CSS 变量（themes1.scss） ==================== */
+    :root {
+      --black: #000000;
+      --white: #ffffff;
+      --g8: #f2f6fc;
+      --g7: #ebeef5;
+      --g6: #e4e7ed;
+      --g5: #dcdfe6;
+      --g4: #c9cdd4;
+      --g3: #86909c;
+      --g2: #4e5969;
+      --g1: #1d2129;
+      --c1: #1677ff;
+      --c1-light: #e8f3ff;
+      --c2: #46a758;
+      --c3: #ff7d00;
+      --c4: #ff4d4f;
+      --c5: #909399;
+      --bg-base: #f5f7fa;
+      --font-bold: 600;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+                   "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+      font-size: 14px;
+      color: var(--g1);
+      overflow: hidden;
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.4;
+    }
+
+    /* ==================== amb-layout 整体布局 ==================== */
+    .amb-layout {
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+      position: relative;
+    }
+    .amb-layout::before {
+      content: '';
+      position: absolute;
+      top: 0; right: 0; bottom: 0; left: 0;
+      z-index: -1;
+      background-image:
+        radial-gradient(40% 46.95% at 50% 53.44%, rgba(22, 119, 255, 0.14) 0%, rgba(255, 255, 255, 0) 100%),
+        radial-gradient(57.48% 48.56% at 50% 50%, rgba(56, 84, 232, 0.16) 0%, rgba(255, 255, 255, 0) 100%),
+        linear-gradient(270deg, #e5edff 0%, #f3eaf8 100%);
+      background-repeat: no-repeat;
+      background-position: calc(0vw - 117px) calc(0vh - 159px), 0 50vh, top left;
+      background-size: 254px 399px, 219px 612px, 100% 100%;
+    }
+
+    /* ==================== layout-top 左侧顶部栏（70px 竖向） ==================== */
+    .layout-top {
+      width: 70px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+    .logo {
+      width: 38px;
+      height: 38px;
+      background: var(--c1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-size: 14px;
+      font-weight: var(--font-bold);
+    }
+
+    /* 快速创建按钮 */
+    .quick-create-btn {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #e9f3ff;
+      border: 1px solid #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-top: 18px;
+      margin-bottom: 18px;
+      transition: all 0.3s;
+    }
+    .quick-create-btn:hover {
+      background: #fff;
+    }
+    .quick-create-btn svg {
+      width: 18px;
+      height: 18px;
+      color: var(--c1);
+    }
+
+    /* 大菜单 */
+    .big-menu-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+    .big-menu-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+      width: 56px;
+      height: 56px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-size: 10px;
+      color: var(--g2);
+      position: relative;
+    }
+    .big-menu-item:hover,
+    .big-menu-item.active {
+      background: #fff;
+    }
+    .big-menu-item.active {
+      font-weight: var(--font-bold);
+      color: var(--c1);
+    }
+    .big-menu-item.active .big-menu-icon {
+      color: var(--c1);
+    }
+    .big-menu-item:not(.active) .big-menu-icon {
+      color: #86909c;
+    }
+    .big-menu-icon {
+      width: 22px;
+      height: 22px;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .big-menu-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    /* 顶部用户信息区 */
+    .top-info {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    .info-item {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 16px;
+      color: var(--g2);
+      transition: all 0.3s;
+      position: relative;
+    }
+    .info-item:hover {
+      background: var(--c1-light);
+      color: var(--c1);
+    }
+    .info-item .badge {
+      position: absolute;
+      right: 7px;
+      top: 7px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--c4);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      background: var(--c1);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+    }
+
+    /* ==================== layout-bottom 底部区域 ==================== */
+    .layout-bottom {
+      flex: 1 1 auto;
+      overflow: hidden;
+      display: flex;
+    }
+    .layout-bottom .left {
+      flex: 0 0 auto;
+      margin-right: 4px;
+    }
+    .layout-bottom .right {
+      flex: 1;
+      overflow: hidden;
+      border-radius: 8px 0 0 8px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ==================== left-menu 左侧菜单（毛玻璃侧边栏） ==================== */
+    .left-menu {
+      width: 176px;
+      height: 100%;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.3s ease;
+    }
+    .left-menu::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 0;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      border-radius: 0 8px 8px 0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-top: 1px solid rgba(255, 255, 255, 0.5);
+      border-left: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .left-menu.collapse {
+      width: 56px;
+    }
+    .menu-wrap {
+      position: relative;
+      z-index: 1;
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding-top: 10px;
+      display: flex;
+      flex-direction: column;
+    }
+    .menu-wrap::-webkit-scrollbar { width: 4px; }
+    .menu-wrap::-webkit-scrollbar-thumb { background: var(--g5); border-radius: 2px; }
+
+    .menu-group { margin-bottom: 4px; }
+    .menu-group-title {
+      height: 40px;
+      line-height: 40px;
+      padding: 0 12px;
+      font-size: 13px;
+      color: var(--g1);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      border-radius: 6px;
+      user-select: none;
+      margin: 0 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+    .menu-group-title:hover {
+      color: var(--c1);
+      font-weight: var(--font-bold);
+      background: rgba(22, 119, 255, 0.12);
+    }
+    .menu-group-title .arrow {
+      font-size: 10px;
+      transition: transform 0.3s;
+      color: var(--g4);
+    }
+    .menu-group.collapsed .menu-group-title .arrow { transform: rotate(-90deg); }
+    .menu-group.collapsed .menu-items { display: none; }
+    .left-menu.collapse .menu-group-title { display: none; }
+
+    .menu-items { padding-left: 4px; }
+    .menu-item {
+      height: 40px;
+      line-height: 40px;
+      padding: 0 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      color: var(--g1);
+      font-size: 13px;
+      margin-bottom: 1px;
+      position: relative;
+      transition: all 0.2s;
+      white-space: nowrap;
+      margin: 0 8px;
+    }
+    .menu-item:hover {
+      color: var(--c1);
+      font-weight: var(--font-bold);
+      background: rgba(22, 119, 255, 0.12);
+    }
+    .menu-item.active {
+      color: var(--c1);
+      font-weight: var(--font-bold);
+      background: rgba(22, 119, 255, 0.12);
+    }
+    .menu-item.active .menu-icon svg {
+      fill: var(--c1);
+    }
+    .menu-item .menu-icon {
+      width: 18px;
+      height: 18px;
+      margin-right: 8px;
+      flex-shrink: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .menu-item .menu-icon svg {
+      width: 18px;
+      height: 18px;
+      fill: var(--g1);
+    }
+    /* 子菜单项圆点前缀 */
+    .menu-item.submenu::before {
+      content: '';
+      display: inline-block;
+      margin-left: -8px;
+      margin-right: 2px;
+      transform: translateY(-2px);
+      width: 4px;
+      height: 4px;
+      border-radius: 4px;
+      background: #d9d9d9;
+      flex-shrink: 0;
+      transition: all 0.3s;
+    }
+    .menu-item.submenu.active::before {
+      background: var(--c1);
+    }
+    .left-menu.collapse .menu-item { padding: 0; justify-content: center; margin: 0 8px; }
+    .left-menu.collapse .menu-icon { margin-right: 0; }
+    .left-menu.collapse .menu-text { display: none; }
+
+    /* 新标签 */
+    .new-tag {
+      width: 32px;
+      height: 14px;
+      position: absolute;
+      right: 10px;
+      top: 14px;
+    }
+    .new-tag.hot,
+    .new-tag.push {
+      width: 20px;
+      height: 20px;
+      top: 11px;
+    }
+
+    .fold-btn {
+      position: relative;
+      z-index: 1;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 18px;
+      cursor: pointer;
+      color: var(--g2);
+      font-size: 12px;
+      border-top: none;
+    }
+    .fold-btn:hover { color: var(--c1); }
+    .fold-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--g2);
+    }
+    .left-menu.collapse .fold-btn { justify-content: center; padding-right: 0; }
+
+    /* ==================== nav-history 标签页导航 ==================== */
+    .nav-history-outer {
+      position: relative;
+    }
+    .nav-history-wrapper {
+      height: 36px;
+      background: linear-gradient(90deg, #ffffff 0%, rgba(255, 255, 255, 0.4) 7.67%, rgba(255, 255, 255, 0.4) 100%);
+      width: 100%;
+      position: relative;
+      padding: 0 24px;
+      display: flex;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .left-arrow,
+    .right-arrow {
+      position: absolute;
+      z-index: 1000;
+      top: 0;
+      width: 24px;
+      height: 100%;
+      font-size: 16px;
+      color: var(--g2);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .left-arrow:hover,
+    .right-arrow:hover {
+      color: var(--c1);
+    }
+    .left-arrow.disabled,
+    .right-arrow.disabled {
+      color: var(--g5);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .left-arrow {
+      left: 0;
+      background: linear-gradient(90deg, #fff 0%, #f9faff 100%);
+    }
+    .right-arrow {
+      right: 0;
+      background: #ece9fa;
+    }
+    .history-list {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      position: relative;
+      transition: transform 0.3s ease;
+    }
+    .history-item {
+      min-width: 80px;
+      flex: 0 0 auto;
+      font-size: 14px;
+      color: var(--g2);
+      padding: 0 8px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+    }
+    .history-item:hover:not(.active) .history-item-inner {
+      background: #bae0ff;
+      border-radius: 6px;
+    }
+    .history-item.active {
+      font-weight: var(--font-bold);
+      color: var(--c1);
+      background: #fff;
+      border-radius: 8px 8px 0 0;
+      justify-content: space-between;
+      height: 100%;
+      position: relative;
+      box-shadow: 0px 6px 18px 6px rgba(31, 35, 41, 0.03),
+                  0px 3px 6px -6px rgba(31, 35, 41, 0.05),
+                  0px 4px 8px 0px rgba(31, 35, 41, 0.03);
+    }
+    .history-item.active::after {
+      display: none;
+    }
+    .history-item-inner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.1s ease;
+      height: 100%;
+      padding: 0 8px;
+    }
+    .history-item::after {
+      content: '';
+      position: absolute;
+      top: 5px;
+      bottom: 5px;
+      right: -1px;
+      width: 0;
+      border-right: 1px solid var(--g6);
+    }
+    .history-item .close-icon {
+      margin-left: 4px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: var(--g3);
+      cursor: pointer;
+    }
+    .history-item .close-icon:hover {
+      background: var(--g7);
+    }
+    /* active tab 圆角装饰 */
+    .radius-left,
+    .radius-right {
+      opacity: 0;
+      position: absolute;
+      bottom: 0;
+      width: 9px;
+      height: 9px;
+      pointer-events: none;
+    }
+    .history-item.active .radius-left,
+    .history-item.active .radius-right {
+      opacity: 1;
+    }
+    .radius-left {
+      left: -8px;
+      fill: #fff;
+      transform: rotate(-90deg);
+    }
+    .radius-right {
+      right: -8px;
+      fill: #fff;
+    }
+
+    /* ==================== content 内容区 ==================== */
+    .content {
+      height: calc(100% - 36px);
+      overflow: auto;
+      background-color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+    .content-inner {
+      background-color: var(--white);
+      border-radius: 4px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      min-height: 0;
+    }
+
+    /* ==================== page-wrap 页面包装 ==================== */
+    .page-wrap {
+      background: var(--g7);
+      display: flex;
+      flex-direction: column;
+      position: absolute;
+      left: 0;
+      top: 0;
+      right: 0;
+      bottom: 0;
+    }
+    .page-wrap .page-title {
+      flex: 0 0 auto;
+      background: #fff;
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 16px 0;
+      align-items: center;
+    }
+    .page-wrap .page-title .left {
+      display: flex;
+      align-items: center;
+      height: 36px;
+    }
+    .page-wrap .page-title .back-btn {
+      margin-right: 4px;
+      font-size: 18px;
+      line-height: 22px;
+      font-weight: bold;
+      cursor: pointer;
+      color: var(--g1);
+      display: none;
+    }
+    .page-wrap .page-title .back-btn:hover {
+      color: var(--c1);
+    }
+    .page-wrap .page-title .title {
+      font-size: 16px;
+      line-height: 22px;
+      color: var(--g1);
+      font-weight: var(--font-bold);
+    }
+    .page-wrap .page-title .desc {
+      font-size: 14px;
+      line-height: 22px;
+      font-weight: 400;
+      color: var(--g3);
+    }
+    .page-wrap .page-title .desc::before {
+      content: '|';
+      color: var(--g5);
+      display: inline-block;
+      margin: 0 12px;
+    }
+    .page-wrap .page-title .fullscreen-btn {
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      color: var(--g1);
+      border-radius: 4px;
+      padding: 3px 6px;
+      border: 1px solid var(--g5);
+      height: 32px;
+      background-color: var(--white);
+      cursor: pointer;
+    }
+    .page-wrap .page-title .fullscreen-btn span {
+      margin-left: 4px;
+    }
+    .page-wrap .page-content {
+      flex: 1 1 auto;
+      background: #fff;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+    /* needBorder 变体 */
+    .page-wrap.need-border .page-title {
+      padding: 8px 16px 8px;
+      border-bottom: 1px #ebedf0 solid;
+    }
+
+    /* ==================== Element UI 风格组件 ==================== */
+    .el-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 16px;
+      border-radius: 4px;
+      border: 1px solid var(--g5);
+      background: #fff;
+      color: var(--g1);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 4px;
+      line-height: 1;
+    }
+    .el-button:hover {
+      border-color: var(--c1);
+      color: var(--c1);
+    }
+    .el-button.primary {
+      background: var(--c1);
+      border-color: var(--c1);
+      color: #fff;
+    }
+    .el-button.primary:hover {
+      background: #4096ff;
+      border-color: #4096ff;
+    }
+    .el-button.success {
+      background: var(--c2);
+      border-color: var(--c2);
+      color: #fff;
+    }
+    .el-button.danger {
+      background: var(--c4);
+      border-color: var(--c4);
+      color: #fff;
+    }
+    .el-button.text {
+      border: none;
+      background: transparent;
+      color: var(--c1);
+      padding: 0 4px;
+      height: auto;
+    }
+    .el-button.text:hover {
+      color: #4096ff;
+    }
+    .el-button.small {
+      height: 28px;
+      padding: 0 12px;
+      font-size: 12px;
+    }
+    .el-button.medium {
+      height: 36px;
+      padding: 0 20px;
+      font-size: 14px;
+    }
+    .el-button:disabled {
+      background: var(--g7);
+      border-color: var(--g6);
+      color: var(--g4);
+      cursor: not-allowed;
+    }
+
+    .el-input {
+      height: 32px;
+      border: 1px solid var(--g5);
+      border-radius: 4px;
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+      width: 200px;
+      transition: border-color 0.2s;
+      color: var(--g1);
+      background: #fff;
+    }
+    .el-input:focus { border-color: var(--c1); }
+    .el-input::placeholder { color: var(--g4); }
+    .el-input:disabled {
+      background: var(--g8);
+      color: var(--g3);
+      cursor: not-allowed;
+    }
+
+    .el-select {
+      height: 32px;
+      border: 1px solid var(--g5);
+      border-radius: 4px;
+      padding: 0 28px 0 12px;
+      font-size: 14px;
+      outline: none;
+      width: 200px;
+      background: #fff;
+      color: var(--g1);
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23606979' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+    }
+
+    .el-textarea {
+      border: 1px solid var(--g5);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      color: var(--g1);
+      background: #fff;
+      resize: vertical;
+      min-height: 80px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+    .el-textarea:focus { border-color: var(--c1); }
+
+    .el-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+      color: var(--g1);
+    }
+    .el-table th {
+      background: #f7f8fa;
+      color: var(--g1);
+      font-weight: var(--font-bold);
+      text-align: left;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--g6);
+      font-size: 14px;
+    }
+    .el-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--g7);
+      color: var(--g2);
+    }
+    .el-table tr:hover td { background: var(--g8); }
+    .el-table tr:last-child td { border-bottom: none; }
+
+    .el-tag {
+      display: inline-flex;
+      align-items: center;
+      height: 26px;
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background: rgba(22, 119, 255, 0.1);
+      color: var(--c1);
+      border: none;
+    }
+    .el-tag.success {
+      background: rgba(70, 167, 88, 0.1);
+      color: var(--c2);
+    }
+    .el-tag.warning {
+      background: rgba(255, 125, 0, 0.1);
+      color: var(--c3);
+    }
+    .el-tag.danger {
+      background: rgba(255, 77, 79, 0.1);
+      color: var(--c4);
+    }
+    .el-tag.info {
+      background: rgba(144, 147, 153, 0.1);
+      color: var(--c5);
+    }
+    .el-tag.small {
+      height: 24px;
+      padding: 0 6px;
+      font-size: 12px;
+    }
+    .el-tag.mini {
+      height: 20px;
+      padding: 0 4px;
+      font-size: 12px;
+    }
+
+    .el-pagination {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 4px;
+      margin-top: 16px;
+      padding: 12px 0;
+    }
+    .el-pagination .total {
+      font-size: 14px;
+      color: rgba(0, 0, 0, 0.6);
+      margin-right: 12px;
+    }
+    .el-pagination button {
+      height: 28px;
+      min-width: 28px;
+      padding: 0 6px;
+      border: 1px solid var(--g5);
+      background: #fff;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      color: var(--g2);
+    }
+    .el-pagination button:hover {
+      color: var(--c1);
+      border-color: var(--c1);
+    }
+    .el-pagination button.active {
+      background: var(--c1);
+      color: #fff;
+      border-color: var(--c1);
+    }
+    .el-pagination button:disabled {
+      color: var(--g4);
+      cursor: not-allowed;
+    }
+
+    .el-link {
+      color: var(--c1);
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+    .el-link:hover {
+      color: #4096ff;
+      text-decoration: underline;
+    }
+
+    .el-tabs {
+      display: flex;
+      flex-direction: column;
+    }
+    .el-tabs-header {
+      display: flex;
+      border-bottom: 1px solid var(--g6);
+      margin-bottom: 16px;
+    }
+    .el-tab-item {
+      padding: 0 16px;
+      height: 40px;
+      line-height: 40px;
+      cursor: pointer;
+      color: var(--g2);
+      font-size: 14px;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.3s;
+    }
+    .el-tab-item:hover {
+      color: var(--c1);
+    }
+    .el-tab-item.active {
+      color: var(--c1);
+      border-bottom-color: var(--c1);
+      font-weight: var(--font-bold);
+    }
+
+    /* 步骤条 */
+    .el-steps {
+      display: flex;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+    .el-step {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .el-step .step-circle {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--g5);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .el-step.active .step-circle { background: var(--c1); }
+    .el-step .step-title {
+      margin-left: 8px;
+      font-size: 13px;
+      color: var(--g2);
+    }
+    .el-step.active .step-title { color: var(--c1); font-weight: var(--font-bold); }
+    .el-step .step-line {
+      flex: 1;
+      height: 1px;
+      background: var(--g5);
+      margin: 0 12px;
+    }
+    .el-step.active .step-line { background: var(--c1); }
+
+    /* 弹窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal {
+      background: #fff;
+      border-radius: 8px;
+      width: 520px;
+      max-width: 90vw;
+      max-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+    }
+    .modal-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--g6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .modal-title { font-size: 16px; font-weight: var(--font-bold); color: var(--g1); }
+    .modal-close { font-size: 18px; color: var(--g3); cursor: pointer; }
+    .modal-close:hover { color: var(--g2); }
+    .modal-body { padding: 20px; overflow: auto; flex: 1; }
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--g6);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    .modal.large { width: 800px; }
+
+    /* 卡片 */
+    .el-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--g6);
+      padding: 16px;
+    }
+    .el-card .card-header {
+      font-size: 14px;
+      font-weight: var(--font-bold);
+      color: var(--g1);
+      margin-bottom: 12px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--g7);
+    }
+
+    /* 抽屉 */
+    .el-drawer-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.3);
+      z-index: 100;
+    }
+    .el-drawer {
+      position: fixed;
+      top: 0; right: 0; bottom: 0;
+      width: 400px;
+      background: #fff;
+      box-shadow: -4px 0 16px rgba(0, 0, 0, 0.08);
+      display: flex;
+      flex-direction: column;
+    }
+    .el-drawer-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--g6);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 16px;
+      font-weight: var(--font-bold);
+    }
+    .el-drawer-body { flex: 1; overflow: auto; padding: 20px; }
+    .el-drawer-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--g6);
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    /* ==================== 布局辅助类（global.scss 常用） ==================== */
+    .g-flex { display: flex; }
+    .g-flex-1 { flex: 1; }
+    .g-flex-center { display: flex; justify-content: center; align-items: center; }
+    .g-flex-between { display: flex; justify-content: space-between; align-items: center; }
+    .g-flex-column { display: flex; flex-direction: column; }
+    .g-flex-h-center { display: flex; align-items: center; }
+
+    .g-fs12 { font-size: 12px; }
+    .g-fs13 { font-size: 13px; }
+    .g-fs14 { font-size: 14px; }
+    .g-fs16 { font-size: 16px; }
+    .g-fs18 { font-size: 18px; }
+    .g-fs20 { font-size: 20px; }
+
+    .g-fc1 { color: var(--c1); }
+    .g-fc2 { color: var(--c2); }
+    .g-fc3 { color: var(--c3); }
+    .g-fc4 { color: var(--c4); }
+    .g-fg1 { color: var(--g1); }
+    .g-fg2 { color: var(--g2); }
+    .g-fg3 { color: var(--g3); }
+    .g-fg4 { color: var(--g4); }
+
+    .g-font-bold { font-weight: var(--font-bold); }
+    .g-c-pointer { cursor: pointer; }
+
+    .g-mt8 { margin-top: 8px; }
+    .g-mt12 { margin-top: 12px; }
+    .g-mt16 { margin-top: 16px; }
+    .g-mt24 { margin-top: 24px; }
+    .g-mb8 { margin-bottom: 8px; }
+    .g-mb12 { margin-bottom: 12px; }
+    .g-mb16 { margin-bottom: 16px; }
+    .g-ml8 { margin-left: 8px; }
+    .g-ml12 { margin-left: 12px; }
+    .g-ml16 { margin-left: 16px; }
+    .g-mr8 { margin-right: 8px; }
+    .g-mr12 { margin-right: 12px; }
+
+    .g-text-left { text-align: left; }
+    .g-text-right { text-align: right; }
+    .g-text-center { text-align: center; }
+
+    .w-full { width: 100%; }
+    .h-full { height: 100%; }
+
+    /* ==================== 搜索栏 ==================== */
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      padding: 0 16px;
+    }
+    .search-bar .filter-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .search-bar .filter-item .label {
+      font-size: 13px;
+      color: var(--g2);
+      white-space: nowrap;
+    }
+
+    /* ==================== 操作按钮栏 ==================== */
+    .op-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 12px;
+    }
+    .op-bar-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .op-bar-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .op-item {
+      display: flex;
+      align-items: center;
+      padding: 6px 0;
+      cursor: pointer;
+      font-size: 14px;
+      color: var(--g2);
+      gap: 4px;
+    }
+    .op-item:hover {
+      color: var(--c1);
+    }
+    .op-item.main {
+      color: var(--c1);
+      font-weight: var(--font-bold);
+    }
+    .op-item .icon {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* ==================== 表单布局 ==================== */
+    .el-form-item {
+      display: flex;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .el-form-label {
+      width: 100px;
+      text-align: right;
+      padding-right: 12px;
+      font-size: 14px;
+      color: var(--g2);
+      flex-shrink: 0;
+      line-height: 32px;
+    }
+    .el-form-label.required::before {
+      content: '*';
+      color: var(--c4);
+      margin-right: 4px;
+    }
+    .el-form-content {
+      flex: 1;
+      min-width: 0;
+    }
+    .el-form-row {
+      display: flex;
+      gap: 24px;
+    }
+    .el-form-row .el-form-item {
+      flex: 1;
+    }
+
+    /* ==================== 区块卡片（表单页用） ==================== */
+    .form-block {
+      background: #fff;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      padding: 20px 24px;
+    }
+    .form-block .block-title {
+      font-size: 14px;
+      font-weight: var(--font-bold);
+      color: var(--g1);
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--g7);
+    }
+
+    /* ==================== 报表卡片 ==================== */
+    .report-card {
+      background: #fff;
+      border-radius: 8px;
+      border: 1px solid var(--g6);
+      padding: 16px;
+      flex: 1;
+    }
+    .report-card .card-title {
+      font-size: 14px;
+      font-weight: var(--font-bold);
+      color: var(--g1);
+      margin-bottom: 12px;
+    }
+
+    /* ==================== 占位提示 ==================== */
+    .content-placeholder {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      color: var(--g3);
+      text-align: center;
+      padding: 40px;
+    }
+    .content-placeholder h2 {
+      font-size: 16px;
+      color: var(--g2);
+      margin-bottom: 8px;
+      font-weight: normal;
+    }
+    .content-placeholder p {
+      font-size: 13px;
+      color: var(--g4);
+    }
+
+    /* ==================== 页面布局模式示例 ==================== */
+    /* 列表页布局 */
+    .page-list-layout {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+    .page-list-layout .list-toolbar {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--g7);
+    }
+    .page-list-layout .list-table-wrap {
+      flex: 1;
+      overflow: auto;
+      padding: 0 16px;
+    }
+    .page-list-layout .list-footer {
+      padding: 0 16px;
+      border-top: 1px solid var(--g7);
+    }
+
+    /* 左右分栏布局 */
+    .page-layout {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+      height: 100%;
+    }
+    .page-layout .layout-left {
+      width: 260px;
+      flex-shrink: 0;
+      border-right: 1px solid var(--g6);
+      overflow: auto;
+      padding: 16px;
+    }
+    .page-layout .layout-right {
+      flex: 1;
+      overflow: auto;
+      padding: 16px;
+    }
+
+    /* 表单页全屏布局 */
+    .form-page-wrap {
+      position: absolute;
+      left: 0; top: 0; right: 0; bottom: 0;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-base);
+    }
+    .form-page-wrap .form-header {
+      background: #fff;
+      padding: 12px 24px;
+      border-bottom: 1px solid var(--g6);
+      display: flex;
+      align-items: center;
+    }
+    .form-page-wrap .form-body {
+      flex: 1;
+      overflow: auto;
+      padding: 24px;
+    }
+    .form-page-wrap .form-body-inner {
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .form-page-wrap .form-footer {
+      background: #fff;
+      padding: 12px 24px;
+      border-top: 1px solid var(--g6);
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="amb-layout">
+    <!-- ==================== 左侧顶部栏（70px 竖向） ==================== -->
+    <div class="layout-top">
+      <div class="top-section">
+        <div class="logo">JB</div>
+        <!-- 快速创建按钮 -->
+        <div class="quick-create-btn" title="快速创建">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="top-section big-menu-wrapper" id="bigMenuWrapper">
+        <div class="big-menu-item active" data-site="sjzx" onclick="switchSite('sjzx')">
+          <div class="big-menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+              <line x1="3" y1="9" x2="21" y2="9"></line>
+              <line x1="9" y1="21" x2="9" y2="9"></line>
+            </svg>
+          </div>
+          <div class="big-menu-name">数据中心</div>
+        </div>
+        <div class="big-menu-item" data-site="cwzx" onclick="switchSite('cwzx')">
+          <div class="big-menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="7" width="20" height="14" rx="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+          </div>
+          <div class="big-menu-name">财务中心</div>
+        </div>
+        <div class="big-menu-item" data-site="fkyys" onclick="switchSite('fkyys')">
+          <div class="big-menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div class="big-menu-name">费控报销</div>
+        </div>
+        <div class="big-menu-item" data-site="invoice-center" onclick="switchSite('invoice-center')">
+          <div class="big-menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            </svg>
+          </div>
+          <div class="big-menu-name">发票中心</div>
+        </div>
+        <div class="big-menu-item" data-site="setting" onclick="switchSite('setting')">
+          <div class="big-menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1.51 1H15a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
+          <div class="big-menu-name">管理后台</div>
+        </div>
+      </div>
+
+      <div class="top-section top-info">
+        <!-- 待审批 -->
+        <div class="info-item" title="待审批">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="badge"></span>
+        </div>
+        <!-- 导入导出 -->
+        <div class="info-item" title="导入导出任务">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </div>
+        <!-- 客服 -->
+        <div class="info-item" title="客服电话">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+          </svg>
+        </div>
+        <!-- 用户头像 -->
+        <div class="user-avatar" title="管理员">A</div>
+      </div>
+    </div>
+
+    <!-- ==================== 底部区域 ==================== -->
+    <div class="layout-bottom">
+      <!-- 左侧子菜单 -->
+      <div class="left">
+        <div class="left-menu" id="leftMenu">
+          <nav class="menu-wrap" id="menuWrap">
+            <!-- 数据中心菜单 -->
+            <div class="menu-group" data-group="sjzx">
+              <div class="menu-group-title" onclick="toggleGroup(this)">
+                <span>数据中心</span>
+                <span class="arrow">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+              </div>
+              <div class="menu-items">
+                <div class="menu-item" data-page="jsc">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg></span>
+                  <span class="menu-text">驾驶舱</span>
+                </div>
+                <div class="menu-item" data-page="profit-table-normal">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">常规贡献式利润表</span>
+                </div>
+                <div class="menu-item" data-page="product-report-total">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11 2v20c-5.07-.5-9-4.79-9-10s3.93-9.5 9-10zm2.03 0v8.99H22c-.47-4.74-4.24-8.52-8.97-8.99zm0 11.01V22c4.74-.47 8.5-4.25 8.97-8.99h-8.97z"/></svg></span>
+                  <span class="menu-text">产品贡献式利润表</span>
+                </div>
+                <div class="menu-item" data-page="changes-table-funds">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
+                  <span class="menu-text">资金变动表</span>
+                </div>
+                <div class="menu-item" data-page="srsj">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span>
+                  <span class="menu-text">收入数据</span>
+                </div>
+                <div class="menu-item" data-page="fycgsj">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg></span>
+                  <span class="menu-text">费用/成本数据</span>
+                </div>
+                <div class="menu-item" data-page="txjt">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-4 6h-4v2h4v2h-4v2h4v2H9V7h6v2z"/></svg></span>
+                  <span class="menu-text">摊销</span>
+                </div>
+                <div class="menu-item" data-page="e-commerce">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg></span>
+                  <span class="menu-text">数据采集助手</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 财务中心菜单 -->
+            <div class="menu-group collapsed" data-group="cwzx">
+              <div class="menu-group-title" onclick="toggleGroup(this)">
+                <span>财务中心</span>
+                <span class="arrow">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+              </div>
+              <div class="menu-items">
+                <div class="menu-item" data-page="receipt">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></span>
+                  <span class="menu-text">收据</span>
+                </div>
+                <div class="menu-item" data-page="receive-menu">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+                  <span class="menu-text">收款单</span>
+                </div>
+                <div class="menu-item" data-page="payment-menu">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></span>
+                  <span class="menu-text">付款管理</span>
+                </div>
+                <div class="menu-item" data-page="pzzx">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg></span>
+                  <span class="menu-text">凭证中心</span>
+                </div>
+                <div class="menu-item" data-page="kmyeb">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">科目余额表</span>
+                </div>
+                <div class="menu-item" data-page="fund-account-view">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05 1.18 1.91 2.53 1.91 1.29 0 2.13-.62 2.13-1.66 0-.83-.58-1.29-2.13-1.71-1.85-.5-3.29-1.29-3.29-3.1 0-1.74 1.31-3.09 3.27-3.45V4h2.66v1.92c1.53.4 2.76 1.43 2.95 3.17h-1.97c-.13-.98-1.1-1.71-2.39-1.71-1.28 0-2.01.6-2.01 1.53 0 .88.66 1.27 2.29 1.71 1.9.52 3.14 1.26 3.14 3.12 0 1.87-1.36 3.16-3.41 3.54z"/></svg></span>
+                  <span class="menu-text">资金总览</span>
+                </div>
+                <div class="menu-item" data-page="asset-list">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 6h-4V4c0-1.11-.89-2-2-2h-4c-1.11 0-2 .89-2 2v2H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-6 0h-4V4h4v2z"/></svg></span>
+                  <span class="menu-text">资产清单</span>
+                </div>
+                <div class="menu-item" data-page="cwbb-menu">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">财务报表</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 费控报销菜单 -->
+            <div class="menu-group collapsed" data-group="fkyys">
+              <div class="menu-group-title" onclick="toggleGroup(this)">
+                <span>费控报销</span>
+                <span class="arrow">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+              </div>
+              <div class="menu-items">
+                <div class="menu-item" data-page="fee-apply">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 7V3.5L18.5 9H13z"/></svg></span>
+                  <span class="menu-text">费用申请</span>
+                </div>
+                <div class="menu-item" data-page="invoice-manage">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+                  <span class="menu-text">我的票据</span>
+                </div>
+                <div class="menu-item" data-page="reimbursement">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/></svg></span>
+                  <span class="menu-text">我的报销</span>
+                </div>
+                <div class="menu-item" data-page="apply-for-payment">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></span>
+                  <span class="menu-text">付款单</span>
+                </div>
+                <div class="menu-item" data-page="my-check">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></span>
+                  <span class="menu-text">我审批的</span>
+                </div>
+                <div class="menu-item" data-page="budget-manage">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">预算管理</span>
+                </div>
+                <div class="menu-item" data-page="warning-inform">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">预警通知</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 发票中心菜单 -->
+            <div class="menu-group collapsed" data-group="invoice-center">
+              <div class="menu-group-title" onclick="toggleGroup(this)">
+                <span>发票中心</span>
+                <span class="arrow">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+              </div>
+              <div class="menu-items">
+                <div class="menu-item" data-page="invoice-center-collect">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></span>
+                  <span class="menu-text">发票采集</span>
+                </div>
+                <div class="menu-item" data-page="invoice-center-received">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></span>
+                  <span class="menu-text">取得的发票</span>
+                </div>
+                <div class="menu-item" data-page="invoice-center-issued">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg></span>
+                  <span class="menu-text">开具的发票</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 管理后台菜单 -->
+            <div class="menu-group collapsed" data-group="setting">
+              <div class="menu-group-title" onclick="toggleGroup(this)">
+                <span>管理后台</span>
+                <span class="arrow">
+                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5"/></svg>
+                </span>
+              </div>
+              <div class="menu-items">
+                <div class="menu-item" data-page="zzjg">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7V3H2v18h20V7H12zM6 19H4v-2h2v2zm0-4H4v-2h2v2zm0-4H4V9h2v2zm0-4H4V5h2v2zm4 12H8v-2h2v2zm0-4H8v-2h2v2zm0-4H8V9h2v2zm0-4H8V5h2v2zm10 12h-8v-2h2v-2h-2v-2h2v-2h-2V9h8v10zm-2-8h-2v2h2v-2zm0 4h-2v2h2v-2z"/></svg></span>
+                  <span class="menu-text">组织架构</span>
+                </div>
+                <div class="menu-item" data-page="emp">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg></span>
+                  <span class="menu-text">员工名册</span>
+                </div>
+                <div class="menu-item" data-page="subject-set">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg></span>
+                  <span class="menu-text">业务科目</span>
+                </div>
+                <div class="menu-item" data-page="role-setting">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg></span>
+                  <span class="menu-text">角色管理</span>
+                </div>
+                <div class="menu-item" data-page="parameter-setting">
+                  <span class="menu-icon"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84a.484.484 0 0 0-.48.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96a.488.488 0 0 0-.59.22L3.16 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.27.41.48.41h3.84c.24 0 .44-.17.48-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></span>
+                  <span class="menu-text">参数配置</span>
+                </div>
+              </div>
+            </div>
+          </nav>
+
+          <div class="fold-btn" onclick="toggleSidebar()" title="收起/展开">
+            <svg id="foldIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== 右侧内容区 ==================== -->
+      <div class="right">
+        <!-- 标签页导航 -->
+        <div class="nav-history-outer">
+          <div class="nav-history-wrapper">
+            <div class="left-arrow disabled">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </div>
+            <div class="right-arrow disabled">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </div>
+            <div class="history-list" id="historyList">
+              <div class="history-item">
+                <div class="history-item-inner">
+                  <span>首页</span>
+                  <span class="close-icon">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </span>
+                </div>
+                <svg class="radius-left" width="9" height="9" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v9h9a9 9 0 01-9-9z" fill="#fff"/></svg>
+                <svg class="radius-right" width="9" height="9" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v9h9a9 9 0 01-9-9z" fill="#fff"/></svg>
+              </div>
+              <div class="history-item active">
+                <div class="history-item-inner">
+                  <span id="activeTabTitle">新功能页面</span>
+                  <span class="close-icon">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                  </span>
+                </div>
+                <svg class="radius-left" width="9" height="9" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v9h9a9 9 0 01-9-9z" fill="#fff"/></svg>
+                <svg class="radius-right" width="9" height="9" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" clip-rule="evenodd" d="M0 0v9h9a9 9 0 01-9-9z" fill="#fff"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 内容区 -->
+        <div class="content">
+          <div class="content-inner">
+            <!-- ==================== CONTENT_START：frontend-design 替换此区域 ==================== -->
+            <div class="page-wrap">
+              <div class="page-title">
+                <div class="left">
+                  <span class="back-btn" id="backBtn" style="display:none">&#8592;</span>
+                  <div class="title" id="pageTitle">新功能页面</div>
+                  <div class="desc" id="pageDesc">功能描述</div>
+                </div>
+                <div class="fullscreen-btn" id="fullscreenBtn" style="display:none">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"/>
+                  </svg>
+                  <span>全屏查看</span>
+                </div>
+              </div>
+              <div class="page-content" id="pageContent">
+                <div class="content-placeholder">
+                  <h2>新功能内容区</h2>
+                  <p>frontend-design skill 请根据 PRD 替换此区域为具体的页面内容</p>
+                  <p style="margin-top: 16px; font-size: 12px; color: var(--g4);">
+                    保持使用模板中定义的 CSS 变量和组件类名<br>
+                    可用组件：el-button、el-input、el-select、el-table、el-tag、el-pagination、el-card、el-steps、modal、el-tabs<br>
+                    可用布局：search-bar、filter-item、el-form-item、op-bar、page-layout、form-page-wrap<br>
+                    可用工具类：g-flex、g-flex-between、g-fs12~g-fs20、g-fc1~g-fc5、g-fg1~g-fg4、g-mt8~g-mt24 等
+                  </p>
+                </div>
+              </div>
+            </div>
+            <!-- ==================== CONTENT_END ==================== -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== 大菜单切换 ====================
+    function switchSite(siteId) {
+      document.querySelectorAll('.big-menu-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.site === siteId);
+      });
+      document.querySelectorAll('.menu-group').forEach(group => {
+        const isTarget = group.dataset.group === siteId;
+        group.classList.toggle('collapsed', !isTarget);
+      });
+    }
+
+    // ==================== 左侧菜单折叠 ====================
+    function toggleSidebar() {
+      const menu = document.getElementById('leftMenu');
+      menu.classList.toggle('collapse');
+      const icon = document.getElementById('foldIcon');
+      if (menu.classList.contains('collapse')) {
+        icon.innerHTML = '<polyline points="9 18 15 12 9 6"></polyline>';
+      } else {
+        icon.innerHTML = '<polyline points="15 18 9 12 15 6"></polyline>';
+      }
+    }
+
+    // ==================== 菜单分组折叠 ====================
+    function toggleGroup(titleEl) {
+      const group = titleEl.closest('.menu-group');
+      group.classList.toggle('collapsed');
+    }
+
+    // ==================== 菜单项激活 ====================
+    function setActiveMenu(menuId) {
+      document.querySelectorAll('.menu-item').forEach(item => {
+        item.classList.toggle('active', item.dataset.page === menuId);
+      });
+    }
+
+    // ==================== 设置页面信息 ====================
+    function setPageInfo(title, desc) {
+      if (title) {
+        document.getElementById('pageTitle').textContent = title;
+        document.getElementById('activeTabTitle').textContent = title;
+        document.title = title + ' - 经贝管家';
+      }
+      if (desc) document.getElementById('pageDesc').textContent = desc;
+    }
+
+    // ==================== 设置返回按钮 ====================
+    function setShowBack(show) {
+      document.getElementById('backBtn').style.display = show ? 'block' : 'none';
+    }
+
+    // ==================== 设置全屏按钮 ====================
+    function setShowFull(show) {
+      document.getElementById('fullscreenBtn').style.display = show ? 'flex' : 'none';
+    }
+
+    // ==================== 设置 page-wrap 底部边框 ====================
+    function setNeedBorder(need) {
+      document.querySelector('.page-wrap').classList.toggle('need-border', need);
+    }
+
+    // ==================== 初始化：展开第一个分组 ====================
+    document.querySelectorAll('.menu-group').forEach((group, index) => {
+      if (index > 0) group.classList.add('collapsed');
+    });
+  </script>
+</body>
+</html>
