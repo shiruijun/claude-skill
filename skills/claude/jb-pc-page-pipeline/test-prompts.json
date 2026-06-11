@@ -1,0 +1,20 @@
+[
+  {
+    "id": 1,
+    "prompt": "帮我生成一个报销单列表页面，需要有编号、报销人、金额、状态字段，支持按日期和金额范围筛选，可以导出",
+    "expected": "输出完整的 Vue 2 SFC，使用 page-wrap + excel-table + v-column + FilterDateRange + FilterMoney，包含新增/导出按钮和操作列",
+    "page_type": "列表页"
+  },
+  {
+    "id": 2,
+    "prompt": "帮我生成一个新增报销单的表单弹窗，包含报销人选择、金额输入、日期选择、备注文本域和附件上传",
+    "expected": "输出 el-dialog + el-form 结构，使用 person-chooser-selector-dept、input-money、file-upload 等组件，宽度800px，双列布局",
+    "page_type": "表单弹窗"
+  },
+  {
+    "id": 3,
+    "prompt": "帮我生成一个费用申请单的详情抽屉，展示单据编号、申请人、金额、审批状态和明细列表",
+    "expected": "输出 el-drawer + desc-block + common-table 结构，使用 formatMoney 过滤器，底部有关闭/编辑按钮",
+    "page_type": "详情抽屉"
+  }
+]
